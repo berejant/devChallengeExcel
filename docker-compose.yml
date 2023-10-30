@@ -1,0 +1,61 @@
+version: '3.9'
+
+volumes:
+  storage:
+
+services:
+  api:
+    build:
+      context: src/
+    ports:
+      - '8080:8080'
+    environment:
+      - DATABASE_FILEPATH=/storage/sheets.db
+    volumes:
+      - storage:/storage
+
+    healthcheck:
+      test: ["CMD", "wget", "-nv", "-t1", "--spider", "http://localhost:8080/healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 1s
+
+  postman:
+    image: postman/newman:alpine
+    profiles:
+      - testing
+    command:
+      run DevChallengeExcel.postman_collection.json
+      -k -r cli
+      --env-var API_HOST=http://api:8080
+      --iteration-count 2
+    volumes:
+      - ./postman:/etc/newman
+    depends_on:
+      api:
+        condition: service_healthy
+
+
+  unit:
+    image: golang:1.21-alpine
+    profiles:
+      - testing
+    working_dir: /src
+    command: ["sh", "-c", "./run-unit-test.sh"]
+    volumes:
+      - ./src:/src:ro
+
+  siege:
+    image: yokogawa/siege
+    profiles:
+      - testing
+    command: '--concurrent=1000 --time=60S --internet --file /urls.txt -H "Content-Type: text/json"'
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - ./siege/urls.txt:/urls.txt
+      - ./siege/log:/var/log
+    environment:
+      - API_HOST=http://api:8080

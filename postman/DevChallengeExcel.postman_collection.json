@@ -1,0 +1,2218 @@
+{
+	"info": {
+		"_postman_id": "ffde457c-98ab-4831-bf02-e77110196bb6",
+		"name": "DevChallengeExcel",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "89669"
+	},
+	"item": [
+		{
+			"name": "Smoke test",
+			"item": [
+				{
+					"name": "Healthcheck",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Body is correct\", function () {",
+									"    pm.response.to.have.body(\"health\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{API_HOST}}/healthcheck",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"healthcheck"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get cell not exists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.error).exist.to.contain(\"not found\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/cell1-not-exists",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"cell1-not-exists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set cell1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('1.5')",
+									"    pm.expect(jsonData.result).to.eql('1.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"1.5\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/cell1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"cell1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set cell2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('7')",
+									"    pm.expect(jsonData.result).to.eql('7')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"7\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/cell2",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"cell2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get cell1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('1.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/cell1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"cell1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set formula1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql(JSON.parse(pm.request.body.raw).value)",
+									"    pm.expect(jsonData.result).to.eql('31')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"= cell1 * 2 + (4 * cell2)\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/formula1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"formula1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get formula1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql(\"= cell1 * 2 + (4 * cell2)\")",
+									"    pm.expect(jsonData.result).to.eql('31')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/formula1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"formula1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get sheet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"pm.test(\"Response cell1\", function () {",
+									"    pm.expect(jsonData.cell1).to.be.an('object')",
+									"    pm.expect(jsonData.cell1.value).to.eql(\"1.5\")",
+									"    pm.expect(jsonData.cell1.result).to.eql(\"1.5\")",
+									"});",
+									"",
+									"pm.test(\"Response cell2\", function () {",
+									"    pm.expect(jsonData.cell2).to.be.an('object')",
+									"    pm.expect(jsonData.cell2.value).to.eql(\"7\")",
+									"    pm.expect(jsonData.cell2.result).to.eql(\"7\")",
+									"});",
+									"",
+									"pm.test(\"Response formula1\", function () {",
+									"    pm.expect(jsonData.formula1).to.be.an('object')",
+									"    pm.expect(jsonData.formula1.value).to.be.an('string')",
+									"    pm.expect(jsonData.formula1.value[0]).to.eql('=')",
+									"    pm.expect(jsonData.formula1.result).to.eql(\"31\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Exotic char in cell_id",
+			"item": [
+				{
+					"name": "Set cell",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('2.5')",
+									"    pm.expect(jsonData.result).to.eql('2.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"2.5\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/cell.val.1{}[]$@:.%3Fa",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exotic-sheet1",
+								"cell.val.1{}[]$@:.%3Fa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get cell",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('2.5')",
+									"    pm.expect(jsonData.result).to.eql('2.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"2.5\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/cell.val.1{}[]$@:.%3Fa",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exotic-sheet1",
+								"cell.val.1{}[]$@:.%3Fa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set formula with exotic chars",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql(JSON.parse(pm.request.body.raw).value)",
+									"    pm.expect(jsonData.result).to.eql('12.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=cell.val.1{}[]$@:.?a+10\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/formula1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exotic-sheet1",
+								"formula1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get formula with exotic chars",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const exoticCellId = 'cell.val.1{}[]$@:.?a'",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql(\"=\" + exoticCellId + \"+10\")",
+									"    pm.expect(jsonData.result).to.eql('12.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/formula1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"exotic-sheet1",
+								"formula1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reserved words",
+			"item": [
+				{
+					"name": "Set cell name `cell1*char2`",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('123')",
+									"    pm.expect(jsonData.result.includes(\"invalid characters\")).to.eql(true)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/reservedWord/cell1*char2",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reservedWord",
+								"cell1*char2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set and",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('55.2')",
+									"    pm.expect(jsonData.result).to.eql('55.2')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"55.2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/reservedWord/and",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reservedWord",
+								"and"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set  or",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=4')",
+									"    pm.expect(jsonData.result).to.eql('4')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=4\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/reservedWord/or",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reservedWord",
+								"or"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set formula or * and",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('= or * and')",
+									"    pm.expect(jsonData.result).to.eql('220.8')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"= or * and\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/reservedWord/formula",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reservedWord",
+								"formula"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Fibonachi",
+			"item": [
+				{
+					"name": "Set element00",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('0')",
+									"    pm.expect(jsonData.result).to.eql('0')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"0\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element00",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element00"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set element01",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=1')",
+									"    pm.expect(jsonData.result).to.eql('1')",
+									"});",
+									"",
+									"pm.environment.set(\"nextFibonachiIndex\", '02');",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element01",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element01"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set elementN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									" ",
+									"",
+									"var nextFibonachiIndex = pm.environment.get(\"nextFibonachiIndex\")",
+									"if (nextFibonachiIndex < 92) {",
+									"    nextFibonachiIndex++;",
+									"    pm.environment.set(\"nextFibonachiIndex\", nextFibonachiIndex.toString().padStart(2, '0'));",
+									"    postman.setNextRequest(\"Set elementN\");",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const toKey = (i) => 'element' + i.toString().padStart(2, '0')",
+									"const index = pm.environment.get(\"nextFibonachiIndex\")",
+									"",
+									"data = {",
+									"    value: '= ' + toKey(index - 2) + ' + ' + toKey(index - 1),",
+									"}",
+									"",
+									"pm.request.body.update(JSON.stringify(data));",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element{{nextFibonachiIndex}}",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element{{nextFibonachiIndex}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get sheet",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"pm.test(\"Element count\", function () {",
+									"    pm.expect(Object.keys(jsonData).length).to.eql(92 + 1)",
+									"});",
+									"",
+									"pm.test(\"Last element92\", function () {",
+									"    pm.expect(jsonData.element92).to.be.an('object')",
+									"    pm.expect(jsonData.element92.value).to.eql(\"= element90 + element91\")",
+									"    // https://www2.cs.arizona.edu/patterns/sequences/fibseq.html",
+									"    pm.expect(jsonData.element92.result).to.eql(\"7540113804746346429\")",
+									"});",
+									"",
+									"// https://www2.cs.arizona.edu/patterns/sequences/fibseq.html",
+									"const fibonachiSequence = '0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711,28657,46368,75025,121393,196418,317811,514229,832040,1346269,2178309,3524578,5702887,9227465,14930352,24157817,39088169,63245986,102334155,165580141,267914296,433494437,701408733,1134903170,1836311903,2971215073,4807526976,7778742049,12586269025,20365011074,32951280099,53316291173,86267571272,139583862445,225851433717,365435296162,591286729879,956722026041,1548008755920,2504730781961,4052739537881,6557470319842,10610209857723,17167680177565,27777890035288,44945570212853,72723460248141,117669030460994,190392490709135,308061521170129,498454011879264,806515533049393,1304969544928657,2111485077978050,3416454622906707,5527939700884757,8944394323791464,14472334024676221,23416728348467685,37889062373143906,61305790721611591,99194853094755497,160500643816367088,259695496911122585,420196140727489673,679891637638612258,1100087778366101931,1779979416004714189,2880067194370816120,4660046610375530309,7540113804746346429'.split(',')",
+									"",
+									"const toKey = (i) => 'element' + i.toString().padStart(2, '0')",
+									"",
+									"fibonachiSequence.forEach(",
+									"    (expectedResult, index) => pm.test(\"Check element \" + index, function () {",
+									"        if (index == 0) {",
+									"            expectedValue = expectedResult.toString()",
+									"        } else if (index == 1) {",
+									"            expectedValue = '=' + expectedResult.toString()",
+									"        } else {",
+									"            expectedValue = '= ' + toKey(index - 2) + ' + ' + toKey(index - 1)",
+									"        }",
+									"",
+									"        key = 'element' + index.toString().padStart(2, '0')",
+									"        acutalCell = jsonData[key];",
+									"        pm.expect(acutalCell).to.be.an('object')",
+									"        pm.expect(acutalCell.value).to.eql(expectedValue)",
+									"        pm.expect(acutalCell.result).to.eql(expectedResult.toString())",
+									"    })",
+									")",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set element00 to invalid string",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('FIBONACHI')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"FIBONACHI\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element00",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element00"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Emulate circulation error element00 to element92",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=element92')",
+									"    pm.expect(jsonData.result.includes(\"circular reference detected\")).to.eql(true)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=element92\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element00",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element00"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set element00 to 21",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('21')",
+									"    pm.expect(jsonData.result).to.eql('21')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"21\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element00",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element00"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get element20",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"pm.test(\"Last element92\", function () {",
+									"    pm.expect(jsonData.result).to.eql(\"94566\")",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element20",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element20"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set element00 to zero",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('0')",
+									"    pm.expect(jsonData.result).to.eql('0')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"0\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element00",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element00"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get element last element (#92)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"pm.test(\"Last element92\", function () {",
+									"    pm.expect(jsonData.value).to.eql(\"= element90 + element91\")",
+									"    // https://www2.cs.arizona.edu/patterns/sequences/fibseq.html",
+									"    pm.expect(jsonData.result).to.eql(\"7540113804746346429\")",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/fibonachi/element92",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"fibonachi",
+								"element92"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "[Fibonachi sequence](https://www2.cs.arizona.edu/patterns/sequences/fibseq.html)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Number cell_id",
+			"item": [
+				{
+					"name": "Set 9=53 Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('53')",
+									"    pm.expect(jsonData.result).to.eql('53')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"53\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/numberCellId/9",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"numberCellId",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set cell 150 with formula 9 + 141 = 53 + 9 = 194",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=9+141')",
+									"    pm.expect(jsonData.result).to.eql((53+141).toString())",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=9+141\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/numberCellId/150",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"numberCellId",
+								"150"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set st123 = number",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('324.23')",
+									"    pm.expect(jsonData.result).to.eql(\"324.23\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"324.23\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/numberCellId/st123",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"numberCellId",
+								"st123"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set numeric cell which use st123",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=st123')",
+									"    pm.expect(jsonData.result).to.eql(\"324.23\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=st123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/numberCellId/999",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"numberCellId",
+								"999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set st123 = string",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('spring')",
+									"    pm.expect(jsonData.result.startsWith(\"cell 999:\")).to.be.true",
+									"    pm.expect(jsonData.result.includes(\"cell with numeric key should has numeric value\")).to.be.true",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"spring\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/numberCellId/st123",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"numberCellId",
+								"st123"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set numeric cell = string",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 422\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('spring')",
+									"    pm.expect(jsonData.result.startsWith(\"cell 5689.80:\")).to.be.true",
+									"    pm.expect(jsonData.result.includes(\"cell with numeric key should has numeric value\")).to.be.true",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"spring\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/numberCellId/5689.80",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"numberCellId",
+								"5689.80"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get sheet",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"pm.test(\"Element count\", function () {",
+									"    pm.expect(Object.keys(jsonData).length).to.eql(4)",
+									"});",
+									"",
+									"pm.test(\"Cell 9\", function () {",
+									"    pm.expect(jsonData[\"9\"]).to.be.an('object')",
+									"    pm.expect(jsonData[\"9\"].value).to.eql(\"53\")",
+									"    pm.expect(jsonData[\"9\"].result).to.eql(\"53\")",
+									"});",
+									"",
+									"",
+									"pm.test(\"Cell 150\", function () {",
+									"    pm.expect(jsonData[\"150\"]).to.be.an('object')",
+									"    pm.expect(jsonData[\"150\"].value).to.eql(\"=9+141\")",
+									"    pm.expect(jsonData[\"150\"].result).to.eql(\"194\")",
+									"});",
+									"",
+									"",
+									"",
+									"pm.test(\"Cell st123\", function () {",
+									"    pm.expect(jsonData[\"st123\"]).to.be.an('object')",
+									"    pm.expect(jsonData[\"st123\"].value).to.eql(\"324.23\")",
+									"    pm.expect(jsonData[\"st123\"].result).to.eql(\"324.23\")",
+									"});",
+									"",
+									"pm.test(\"Cell 999\", function () {",
+									"    pm.expect(jsonData[\"999\"]).to.be.an('object')",
+									"    pm.expect(jsonData[\"999\"].value).to.eql(\"=st123\")",
+									"    pm.expect(jsonData[\"999\"].result).to.eql(\"324.23\")",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/numberCellId",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"numberCellId"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Arithmetic formula",
+			"item": [
+				{
+					"name": "Set  a",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('1')",
+									"    pm.expect(jsonData.result).to.eql('1')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/a",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set b",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('2')",
+									"    pm.expect(jsonData.result).to.eql('2')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/arithMEtic/b",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"arithMEtic",
+								"b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set c",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('= a + b')",
+									"    pm.expect(jsonData.result).to.eql('3')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"= a + b\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/c",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set d",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('= c + a')",
+									"    pm.expect(jsonData.result).to.eql('4')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"= c + a\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/d",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set e",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"let a = 1;",
+									"let b = 2",
+									"let c = a + b",
+									"let d = c + a",
+									"let e = d + b / (3 * 4 + a) - Math.pow(10, b)",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.result).to.eql(e.toString())",
+									"    pm.expect(jsonData.value).to.eql('= d + b / (3 * 4 + a) - 10 ^ b')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"= d + b / (3 * 4 + a) - 10 ^ b\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/e",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"e"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get e",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let a = 1;",
+									"let b = 2",
+									"let c = a + b",
+									"let d = c + a",
+									"let e = d + b / (3 * 4 + a) - Math.pow(10, b)",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('= d + b / (3 * 4 + a) - 10 ^ b')",
+									"    pm.expect(jsonData.result).to.eql(e.toString())",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/e",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"e"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set b = 10.252525252525",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('10.252525252525')",
+									"    pm.expect(jsonData.result).to.eql('10.252525252525')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"10.252525252525\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/b",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get e",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let a = 1;",
+									"let b = 10.252525252525;",
+									"let c = a + b",
+									"let d = c + a",
+									"let e = d + b / (3 * 4 + a) - Math.pow(10, b)",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    let expected = e.toString();",
+									"    let expectedLength = expected.length;",
+									"",
+									"    pm.expect(jsonData.value).to.eql('= d + b / (3 * 4 + a) - 10 ^ b')",
+									"    pm.expect(jsonData.result.slice(0, expectedLength)).to.eql(e.toString())",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/e",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"e"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Infinity plus",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=10/0')",
+									"    pm.expect(jsonData.result).to.eql('+Inf')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=10/0\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/Infinity plus",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"Infinity plus"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set Infinity minus",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=-10/(5-2-3)')",
+									"    pm.expect(jsonData.result).to.eql('-Inf')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=-10/(5-2-3)\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/Arithmetic/Infinity minus",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"Arithmetic",
+								"Infinity minus"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "```\na = 1\nb = 2\nc = a + b => 3\nd = c + a => 4\ne = d + b / (3 * 4 + a)  => ???\n\n ```"
+		}
+	]
+}
