@@ -4,6 +4,7 @@ import (
 	"devChallengeExcel/contracts"
 	"devChallengeExcel/mocks"
 	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.etcd.io/bbolt"
@@ -13,6 +14,35 @@ import (
 )
 
 func TestSheet_SetCell(t *testing.T) {
+	expectedCellsMatcher := func(expectedCells ...contracts.Cell) interface{} {
+		return mock.MatchedBy(func(cells []*contracts.Cell) bool {
+			if len(cells) != len(expectedCells) {
+				fmt.Fprintf(os.Stderr, "len(cells): %d, len(expectedCells): %d\n", len(cells), len(expectedCells))
+				return false
+			}
+
+			for i, cell := range cells {
+				if cell == nil {
+					fmt.Fprintf(os.Stderr, "cell[%d] is nil\n", i)
+					return false
+				}
+
+				if cell.CanonicalKey != expectedCells[i].CanonicalKey {
+					fmt.Fprintf(os.Stderr, "cell.CanonicalKey: %s, expectedCells[%d].CanonicalKey: %s\n", cell.CanonicalKey, i, expectedCells[i].CanonicalKey)
+					return false
+				}
+				if cell.Value != expectedCells[i].Value {
+					fmt.Fprintf(os.Stderr, "cell.Value: %s, expectedCells[%d].Value: %s\n", cell.Value, i, expectedCells[i].Value)
+					return false
+				}
+				if cell.Result != expectedCells[i].Result {
+					fmt.Fprintf(os.Stderr, "cell.Result: %s, expectedCells[%d].Result: %s\n", cell.Result, i, expectedCells[i].Result)
+					return false
+				}
+			}
+			return true
+		})
+	}
 	canonicalizer := NewCanonicalizer()
 
 	sheetId := "sheet1"
@@ -37,23 +67,33 @@ func TestSheet_SetCell(t *testing.T) {
 
 		t.Run("first_write", func(t *testing.T) {
 			executor := mocks.NewExpressionExecutor(t)
+			webhookDispatcher := mocks.NewWebhookDispatcher(t)
+
 			sheetRepository := &SheetRepository{
-				db:             db,
-				executor:       executor,
-				canonicalizer:  canonicalizer,
-				serializer:     serializer,
-				dependencyTree: &CellDependencyTree{},
+				db:                db,
+				executor:          executor,
+				canonicalizer:     canonicalizer,
+				serializer:        serializer,
+				dependencyTree:    &CellDependencyTree{},
+				webhookDispatcher: webhookDispatcher,
 			}
 
 			executor.On("MultiEvaluate", contracts.ExpressionsMap{canonical1: &value}, mock.Anything, true).
 				Return(func(expressions contracts.ExpressionsMap, getter contracts.CellValuesGetter, breakOnError bool) error {
-					(expressions)[canonical1] = _makeStringRef("result")
+					*expressions[canonical1] = "result"
 					return nil
 				})
 
 			executor.On("ExtractDependingOnList", value).Return([]string{})
 
-			cell, err := sheetRepository.SetCell(sheetId, cell1, value)
+			expectCell := contracts.Cell{
+				CanonicalKey: canonical1,
+				Value:        value,
+				Result:       "result",
+			}
+			webhookDispatcher.On("Notify", sheetId, expectedCellsMatcher(expectCell)).Return()
+
+			cell, err, _ := sheetRepository.SetCell(sheetId, cell1, value, true)
 
 			assert.NotNil(t, cell)
 			assert.NoError(t, err)
@@ -74,7 +114,7 @@ func TestSheet_SetCell(t *testing.T) {
 
 			executor.On("Evaluate", value, mock.Anything).Return("result", nil)
 
-			cell, err := sheetRepository.SetCell(sheetId, cell1, value)
+			cell, err, _ := sheetRepository.SetCell(sheetId, cell1, value, true)
 
 			assert.NotNil(t, cell)
 			assert.NoError(t, err)
@@ -88,22 +128,31 @@ func TestSheet_SetCell(t *testing.T) {
 		db, dbClose := _createTmpDb()
 		defer dbClose()
 		executor := mocks.NewExpressionExecutor(t)
+		webhookDispatcher := mocks.NewWebhookDispatcher(t)
+
 		sheetRepository := &SheetRepository{
-			db:             db,
-			executor:       executor,
-			canonicalizer:  canonicalizer,
-			serializer:     serializer,
-			dependencyTree: &CellDependencyTree{},
+			db:                db,
+			executor:          executor,
+			canonicalizer:     canonicalizer,
+			serializer:        serializer,
+			dependencyTree:    &CellDependencyTree{},
+			webhookDispatcher: webhookDispatcher,
 		}
 
 		executor.On("MultiEvaluate", contracts.ExpressionsMap{canonical2: &value2}, mock.Anything, true).
 			Return(func(expressions contracts.ExpressionsMap, getter contracts.CellValuesGetter, breakOnError bool) error {
-				(expressions)[canonical2] = _makeStringRef("result2")
+				*expressions[canonical2] = "result2"
 				return nil
 			})
 		executor.On("ExtractDependingOnList", value2).Return([]string{canonical3})
 
-		cell, err := sheetRepository.SetCell(sheetId, cell2, value2)
+		webhookDispatcher.On("Notify", sheetId, expectedCellsMatcher(contracts.Cell{
+			CanonicalKey: canonical2,
+			Value:        value2,
+			Result:       "result2",
+		})).Return().Once()
+
+		cell, err, _ := sheetRepository.SetCell(sheetId, cell2, value2, true)
 		assert.NotNil(t, cell)
 		assert.NoError(t, err)
 
@@ -123,7 +172,23 @@ func TestSheet_SetCell(t *testing.T) {
 			})
 		executor.On("ExtractDependingOnList", value3).Return([]string{""})
 
-		cell, err = sheetRepository.SetCell(sheetId, cell3, value3)
+		webhookDispatcher = mocks.NewWebhookDispatcher(t)
+		sheetRepository.webhookDispatcher = webhookDispatcher
+		expectedCell2 := contracts.Cell{
+			CanonicalKey: canonical2,
+			Value:        value2,
+			Result:       "cell2_result",
+		}
+
+		expectedCell3 := contracts.Cell{
+			CanonicalKey: canonical3,
+			Value:        value3,
+			Result:       "cell3_result",
+		}
+
+		webhookDispatcher.On("Notify", sheetId, expectedCellsMatcher(expectedCell3, expectedCell2)).Return().Once()
+
+		cell, err, _ = sheetRepository.SetCell(sheetId, cell3, value3, true)
 
 		assert.NotNil(t, cell)
 		assert.NoError(t, err)
@@ -150,7 +215,7 @@ func TestSheet_SetCell(t *testing.T) {
 
 		executor.On("ExtractDependingOnList", value).Return([]string{}).Maybe()
 
-		cell, err := sheet.SetCell(sheetId, cell1, value)
+		cell, err, _ := sheet.SetCell(sheetId, cell1, value, true)
 
 		assert.NotNil(t, cell)
 		assert.Error(t, err)
@@ -168,24 +233,32 @@ func TestSheet_SetCell(t *testing.T) {
 		executor := mocks.NewExpressionExecutor(t)
 		executor.On("MultiEvaluate", contracts.ExpressionsMap{canonical1: &value}, mock.Anything, true).
 			Return(func(expressions contracts.ExpressionsMap, getter contracts.CellValuesGetter, breakOnError bool) error {
-				(expressions)[canonical1] = _makeStringRef("result")
+				*expressions[canonical1] = "result"
 				return nil
 			})
-		executor.On("ExtractDependingOnList", value).Return([]string{}).Maybe()
+		executor.On("ExtractDependingOnList", "value").Return([]string{}).Maybe()
+
+		webhookDispatcher := mocks.NewWebhookDispatcher(t)
+		webhookDispatcher.On("Notify", sheetId, expectedCellsMatcher(contracts.Cell{
+			CanonicalKey: canonical1,
+			Value:        value,
+			Result:       "result",
+		})).Return().Once()
 
 		tree := mocks.NewCellDependencyTree(t)
 		tree.On("SetDependsOn", mock.Anything, []byte(sheetId), canonical1, []string{}).Return(expectedErr)
 		tree.On("GetDependants", mock.Anything, []byte(sheetId), canonical1).Return([]string{}).Maybe()
 
 		sheet := &SheetRepository{
-			db:             isolatedDb,
-			executor:       executor,
-			canonicalizer:  NewCanonicalizer(),
-			serializer:     NewCellBinarySerializer(),
-			dependencyTree: tree,
+			db:                isolatedDb,
+			executor:          executor,
+			canonicalizer:     NewCanonicalizer(),
+			serializer:        NewCellBinarySerializer(),
+			dependencyTree:    tree,
+			webhookDispatcher: webhookDispatcher,
 		}
 
-		cell, err := sheet.SetCell(sheetId, cell1, value)
+		cell, err, _ := sheet.SetCell(sheetId, cell1, value, true)
 
 		assert.NotNil(t, cell)
 		assert.Error(t, err)
@@ -212,24 +285,32 @@ func TestSheet_SetCell(t *testing.T) {
 		executor := mocks.NewExpressionExecutor(t)
 		executor.On("MultiEvaluate", contracts.ExpressionsMap{canonical1: &value}, mock.Anything, true).
 			Return(func(expressions contracts.ExpressionsMap, getter contracts.CellValuesGetter, breakOnError bool) error {
-				(expressions)[canonical1] = _makeStringRef("result")
+				*expressions[canonical1] = "result"
 				return nil
 			})
-		executor.On("ExtractDependingOnList", value).Return([]string{})
+		executor.On("ExtractDependingOnList", "value").Return([]string{})
+
+		webhookDispatcher := mocks.NewWebhookDispatcher(t)
+		webhookDispatcher.On("Notify", sheetId, expectedCellsMatcher(contracts.Cell{
+			CanonicalKey: canonical1,
+			Value:        value,
+			Result:       "result",
+		})).Return().Once()
 
 		tree := mocks.NewCellDependencyTree(t)
 		tree.On("SetDependsOn", mock.Anything, []byte(sheetId), canonical1, []string{}).Return(nil)
 		tree.On("GetDependants", mock.Anything, []byte(sheetId), canonical1).Return([]string{})
 
 		sheet := &SheetRepository{
-			db:             dbWithError,
-			executor:       executor,
-			canonicalizer:  NewCanonicalizer(),
-			serializer:     NewCellBinarySerializer(),
-			dependencyTree: tree,
+			db:                dbWithError,
+			executor:          executor,
+			canonicalizer:     NewCanonicalizer(),
+			serializer:        NewCellBinarySerializer(),
+			dependencyTree:    tree,
+			webhookDispatcher: webhookDispatcher,
 		}
 
-		cell, err := sheet.SetCell(sheetId, cell1, value)
+		cell, err, _ := sheet.SetCell(sheetId, cell1, value, true)
 
 		assert.NotNil(t, cell)
 		assert.Error(t, err)
@@ -241,7 +322,7 @@ func TestSheet_SetCell(t *testing.T) {
 
 	t.Run("blacklist_char", func(t *testing.T) {
 		sheet := &SheetRepository{}
-		cell, err := sheet.SetCell(sheetId, "cell1+cell1", "value")
+		cell, err, _ := sheet.SetCell(sheetId, "cell1+cell1", "value", true)
 
 		assert.NotNil(t, cell)
 		assert.Error(t, err)
@@ -255,23 +336,32 @@ func TestSheet_SetCell(t *testing.T) {
 		defer dbClose()
 
 		executor := mocks.NewExpressionExecutor(t)
+		webhookDispatcher := mocks.NewWebhookDispatcher(t)
+
+		webhookDispatcher.On("Notify", "", expectedCellsMatcher(contracts.Cell{
+			CanonicalKey: canonical1,
+			Value:        value,
+			Result:       "result",
+		})).Return().Once()
+
 		sheet := &SheetRepository{
-			db:             db,
-			executor:       executor,
-			canonicalizer:  NewCanonicalizer(),
-			serializer:     NewCellBinarySerializer(),
-			dependencyTree: &CellDependencyTree{},
+			db:                db,
+			executor:          executor,
+			canonicalizer:     NewCanonicalizer(),
+			serializer:        NewCellBinarySerializer(),
+			dependencyTree:    &CellDependencyTree{},
+			webhookDispatcher: webhookDispatcher,
 		}
 
 		executor.On("MultiEvaluate", contracts.ExpressionsMap{canonical1: &value}, mock.Anything, true).
 			Return(func(expressions contracts.ExpressionsMap, getter contracts.CellValuesGetter, breakOnError bool) error {
-				(expressions)[canonical1] = _makeStringRef("result")
+				*expressions[canonical1] = "result"
 				return nil
 			}).Maybe()
 
 		executor.On("ExtractDependingOnList", value).Return([]string{}).Maybe()
 
-		cell, err := sheet.SetCell("", "cell1", "value")
+		cell, err, _ := sheet.SetCell("", "cell1", "value", true)
 
 		assert.NotNil(t, cell)
 		assert.Error(t, err)
@@ -521,18 +611,22 @@ func _prepareSheet(t *testing.T, sheetId string) *bbolt.DB {
 	executor.On("MultiEvaluate", mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
 	executor.On("ExtractDependingOnList", mock.Anything).Return([]string{})
 
+	webhookDispatcher := mocks.NewWebhookDispatcher(t)
+	webhookDispatcher.On("Notify", mock.Anything, mock.Anything).Return().Maybe()
+
 	sheet := &SheetRepository{
-		db:             db,
-		executor:       executor,
-		canonicalizer:  NewCanonicalizer(),
-		serializer:     NewCellBinarySerializer(),
-		dependencyTree: &CellDependencyTree{},
+		db:                db,
+		executor:          executor,
+		canonicalizer:     NewCanonicalizer(),
+		serializer:        NewCellBinarySerializer(),
+		dependencyTree:    &CellDependencyTree{},
+		webhookDispatcher: webhookDispatcher,
 	}
 
-	_, err := sheet.SetCell(sheetId, "cell1", "value1")
+	_, err, _ := sheet.SetCell(sheetId, "cell1", "value1", true)
 	assert.NoError(t, err)
 
-	_, err = sheet.SetCell(sheetId, "cell2", "value2")
+	_, err, _ = sheet.SetCell(sheetId, "cell2", "value2", true)
 	assert.NoError(t, err)
 
 	// finish prepare sheet

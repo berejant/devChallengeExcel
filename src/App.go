@@ -10,14 +10,19 @@ import (
 
 const ExitCodeMainError = 1
 
+const ListenPort = ":8080"
+
 func RunApp() error {
 	gin.SetMode(gin.ReleaseMode)
 
 	serviceContainer, err := BuildServiceContainer(os.Getenv("DATABASE_FILEPATH"))
 
 	if err == nil {
+		serviceContainer.WebhookDispatcher.Start()
+		defer serviceContainer.WebhookDispatcher.Close()
 		defer serviceContainer.Database.Close()
-		err = http.ListenAndServe(":8080", serviceContainer.Router)
+
+		err = http.ListenAndServe(ListenPort, serviceContainer.Router)
 	}
 
 	return err

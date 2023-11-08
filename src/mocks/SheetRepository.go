@@ -13,6 +13,20 @@ type SheetRepository struct {
 	mock.Mock
 }
 
+// GetCanonicalSheetId provides a mock function with given fields: sheetId
+func (_m *SheetRepository) GetCanonicalSheetId(sheetId string) string {
+	ret := _m.Called(sheetId)
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(sheetId)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
 // GetCell provides a mock function with given fields: sheetId, cellId
 func (_m *SheetRepository) GetCell(sheetId string, cellId string) (*contracts.Cell, error) {
 	ret := _m.Called(sheetId, cellId)
@@ -65,30 +79,37 @@ func (_m *SheetRepository) GetCellList(sheetId string) (*contracts.CellList, err
 	return r0, r1
 }
 
-// SetCell provides a mock function with given fields: sheetId, cellId, value
-func (_m *SheetRepository) SetCell(sheetId string, cellId string, value string) (*contracts.Cell, error) {
-	ret := _m.Called(sheetId, cellId, value)
+// SetCell provides a mock function with given fields: sheetId, cellId, value, skipNotChanged
+func (_m *SheetRepository) SetCell(sheetId string, cellId string, value string, skipNotChanged bool) (*contracts.Cell, error, bool) {
+	ret := _m.Called(sheetId, cellId, value, skipNotChanged)
 
 	var r0 *contracts.Cell
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string, string) (*contracts.Cell, error)); ok {
-		return rf(sheetId, cellId, value)
+	var r2 bool
+	if rf, ok := ret.Get(0).(func(string, string, string, bool) (*contracts.Cell, error, bool)); ok {
+		return rf(sheetId, cellId, value, skipNotChanged)
 	}
-	if rf, ok := ret.Get(0).(func(string, string, string) *contracts.Cell); ok {
-		r0 = rf(sheetId, cellId, value)
+	if rf, ok := ret.Get(0).(func(string, string, string, bool) *contracts.Cell); ok {
+		r0 = rf(sheetId, cellId, value, skipNotChanged)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*contracts.Cell)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string, string) error); ok {
-		r1 = rf(sheetId, cellId, value)
+	if rf, ok := ret.Get(1).(func(string, string, string, bool) error); ok {
+		r1 = rf(sheetId, cellId, value, skipNotChanged)
 	} else {
 		r1 = ret.Error(1)
 	}
 
-	return r0, r1
+	if rf, ok := ret.Get(2).(func(string, string, string, bool) bool); ok {
+		r2 = rf(sheetId, cellId, value, skipNotChanged)
+	} else {
+		r2 = ret.Get(2).(bool)
+	}
+
+	return r0, r1, r2
 }
 
 type mockConstructorTestingTNewSheetRepository interface {

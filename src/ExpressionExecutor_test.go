@@ -35,7 +35,7 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 		})
 
 		t.Run("simple_formula_variables", func(t *testing.T) {
-			getValuesNames := []string{"A1", "A2"}
+			getValuesNames := []string{"a1", "a2"}
 			getValues := []*string{
 				_makeStringRef("110"),
 				_makeStringRef("20.5"),
@@ -56,17 +56,17 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 	t.Run("recursive_formula", func(t *testing.T) {
 		t.Run("deep_with_two_recursive", func(t *testing.T) {
 			varsGetting := map[*[]string][]*string{
-				&[]string{"A1", "A2"}: {
+				&[]string{"a1", "a2"}: {
 					_makeStringRef("= A10 - A20"),
 					_makeStringRef("=A30*A31"),
 				},
 
-				&[]string{"A10", "A20"}: {
+				&[]string{"a10", "a20"}: {
 					_makeStringRef("-10"),
 					_makeStringRef("50"),
 				},
 
-				&[]string{"A30", "A31"}: {
+				&[]string{"a30", "a31"}: {
 					_makeStringRef("2"),
 					_makeStringRef("3"),
 				},
@@ -86,12 +86,12 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 
 		t.Run("circular", func(t *testing.T) {
 			varsGetting := map[*[]string][]*string{
-				&[]string{"A1", "A2"}: {
+				&[]string{"a1", "a2"}: {
 					_makeStringRef("= A10 - A20"),
 					_makeStringRef("=A30*A31"),
 				},
 
-				&[]string{"A10", "A20"}: {
+				&[]string{"a10", "a20"}: {
 					_makeStringRef("-10"),
 					_makeStringRef("=A1"),
 				},
@@ -113,7 +113,7 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 
 	t.Run("override_numbers", func(t *testing.T) {
 		t.Run("simple", func(t *testing.T) {
-			getValuesNames := []string{"1", "2.2", "10", "A3"}
+			getValuesNames := []string{"1", "2.2", "10", "a3"}
 			getValues := []*string{
 				_makeStringRef("40.5"),
 				_makeStringRef("6"),
@@ -132,7 +132,7 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 		})
 
 		t.Run("recursive", func(t *testing.T) {
-			getValuesNames := []string{"1", "2.2", "10", "A3"}
+			getValuesNames := []string{"1", "2.2", "10", "a3"}
 			getValues := []*string{
 				_makeStringRef("40.5"),
 				_makeStringRef("6"),
@@ -143,7 +143,7 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 			valuesGetter := mocks.NewCellValuesGetter(t)
 			valuesGetter.On("Execute", getValuesNames).Return(getValues)
 
-			valuesGetter.On("Execute", []string{"A4"}).Return([]*string{
+			valuesGetter.On("Execute", []string{"a4"}).Return([]*string{
 				_makeStringRef("=" + getValuesNames[0]),
 			})
 
@@ -157,7 +157,7 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 
 		t.Run("recursive_digit_value", func(t *testing.T) {
 			// cell have digit value which match with cell name - do not override it
-			getValuesNames := []string{"1", "2.2", "10", "A3"}
+			getValuesNames := []string{"1", "2.2", "10", "a3"}
 			getValues := []*string{
 				_makeStringRef("40.5"),
 				_makeStringRef("6"),
@@ -168,7 +168,7 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 			valuesGetter := mocks.NewCellValuesGetter(t)
 			valuesGetter.On("Execute", getValuesNames).Return(getValues)
 
-			valuesGetter.On("Execute", []string{"A4"}).Return([]*string{
+			valuesGetter.On("Execute", []string{"a4"}).Return([]*string{
 				&getValuesNames[0],
 			})
 
@@ -192,7 +192,7 @@ func TestExpressionExecutor_Evaluate(t *testing.T) {
 		})
 
 		t.Run("runtime_error", func(t *testing.T) {
-			getValuesNames := []string{"A1", "A2"}
+			getValuesNames := []string{"a1", "a2"}
 			getValues := []*string{
 				_makeStringRef("110"),
 				_makeStringRef("string"),
@@ -215,11 +215,11 @@ func TestExpressionExecutor_MultiEvaluate(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		expressions := contracts.ExpressionsMap{
-			"H10": _makeStringRef("5"),
-			"H11": _makeStringRef("awesome"),
+			"h10": _makeStringRef("5"),
+			"h11": _makeStringRef("awesome"),
 			//			"H20": _makeStringRef("=NOT_EXISTING + 1"),
-			"H12": _makeStringRef("=1+2"),
-			"H13": _makeStringRef("=H10+H12"),
+			"h12": _makeStringRef("=1+2"),
+			"h13": _makeStringRef("=H10+H12"),
 		}
 
 		executor := NewExpressionExecutor(NewCanonicalizer())
@@ -227,19 +227,19 @@ func TestExpressionExecutor_MultiEvaluate(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		assert.Equal(t, "5", *expressions["H10"])
-		assert.Equal(t, "awesome", *expressions["H11"])
-		assert.Equal(t, "3", *expressions["H12"])
-		assert.Equal(t, "8", *expressions["H13"])
+		assert.Equal(t, "5", *expressions["h10"])
+		assert.Equal(t, "awesome", *expressions["h11"])
+		assert.Equal(t, "3", *expressions["h12"])
+		assert.Equal(t, "8", *expressions["h13"])
 	})
 
 	t.Run("errors", func(t *testing.T) {
 		expressions := contracts.ExpressionsMap{
-			"H10": _makeStringRef("5"),
-			"H11": _makeStringRef("awesome"),
-			"H20": _makeStringRef("=NOT_EXISTING + 1"),
-			"H12": _makeStringRef("=1+2"),
-			"H13": _makeStringRef("=H10+H11"),
+			"h10": _makeStringRef("5"),
+			"h11": _makeStringRef("awesome"),
+			"h20": _makeStringRef("=NOT_EXISTING + 1"),
+			"h12": _makeStringRef("=1+2"),
+			"h13": _makeStringRef("=H10+H11"),
 		}
 
 		executor := NewExpressionExecutor(NewCanonicalizer())
@@ -248,24 +248,24 @@ func TestExpressionExecutor_MultiEvaluate(t *testing.T) {
 		assert.Error(t, err)
 		assert.True(t, strings.HasPrefix(err.Error(), "cell "), err.Error())
 
-		assert.Equal(t, "5", *expressions["H10"])
-		assert.Equal(t, "awesome", *expressions["H11"])
-		assert.Equal(t, "3", *expressions["H12"])
+		assert.Equal(t, "5", *expressions["h10"])
+		assert.Equal(t, "awesome", *expressions["h11"])
+		assert.Equal(t, "3", *expressions["h12"])
 
-		assert.True(t, strings.HasPrefix(*expressions["H20"], "ERROR: "))
-		assert.True(t, strings.HasPrefix(*expressions["H13"], "ERROR: "))
+		assert.True(t, strings.HasPrefix(*expressions["h20"], "ERROR: "))
+		assert.True(t, strings.HasPrefix(*expressions["h13"], "ERROR: "))
 	})
 
 	t.Run("break_on_first_error", func(t *testing.T) {
 		expressions := contracts.ExpressionsMap{
-			"A1":  _makeStringRef("=1+2"),
-			"H10": _makeStringRef("5"),
-			"H11": _makeStringRef("awesome"),
-			"H20": _makeStringRef("=NOT_EXISTING + 1"),
-			"H13": _makeStringRef("=H10+H11"),
-			"H12": _makeStringRef("=1+2"),
+			"a1":  _makeStringRef("=1+2"),
+			"h10": _makeStringRef("5"),
+			"h11": _makeStringRef("awesome"),
+			"h20": _makeStringRef("=NOT_EXISTING + 1"),
+			"h13": _makeStringRef("=H10+H11"),
+			"h12": _makeStringRef("=1+2"),
 
-			"HHHH220": _makeStringRef("=1+2"),
+			"hhhh220": _makeStringRef("=1+2"),
 		}
 
 		executor := NewExpressionExecutor(NewCanonicalizer())
@@ -274,13 +274,13 @@ func TestExpressionExecutor_MultiEvaluate(t *testing.T) {
 		assert.Error(t, err)
 		assert.True(t, strings.HasPrefix(err.Error(), "cell "), err.Error())
 
-		assert.Equal(t, "5", *expressions["H10"])
-		assert.Equal(t, "awesome", *expressions["H11"])
+		assert.Equal(t, "5", *expressions["h10"])
+		assert.Equal(t, "awesome", *expressions["h11"])
 		// last expression is not executed
-		atLeastOneNotExecuted := *expressions["H13"] == "=H10+H11" || *expressions["HHHH220"] == "=1+2" || *expressions["A1"] == "=1+2"
+		atLeastOneNotExecuted := *expressions["h13"] == "=H10+H11" || *expressions["hhhh220"] == "=1+2" || *expressions["a1"] == "=1+2"
 		assert.True(t, atLeastOneNotExecuted)
 
-		assert.True(t, strings.HasPrefix(*expressions["H20"], "ERROR: ") || strings.HasPrefix(*expressions["H13"], "ERROR: "))
+		assert.True(t, strings.HasPrefix(*expressions["h20"], "ERROR: ") || strings.HasPrefix(*expressions["h13"], "ERROR: "))
 	})
 
 	t.Run("numeric_cell_id", func(t *testing.T) {
@@ -300,7 +300,7 @@ func TestExpressionExecutor_MultiEvaluate(t *testing.T) {
 		t.Run("string_in_referenced", func(t *testing.T) {
 			expressions := contracts.ExpressionsMap{
 				"123": _makeStringRef("=A1"),
-				"A1":  _makeStringRef("=awesome"),
+				"a1":  _makeStringRef("=awesome"),
 			}
 
 			executor := NewExpressionExecutor(NewCanonicalizer())
@@ -314,7 +314,7 @@ func TestExpressionExecutor_MultiEvaluate(t *testing.T) {
 		t.Run("correct_numeric_value_by_ref", func(t *testing.T) {
 			expressions := contracts.ExpressionsMap{
 				"123": _makeStringRef("=A1"),
-				"A1":  _makeStringRef("=1234"),
+				"a1":  _makeStringRef("=1234"),
 			}
 
 			executor := NewExpressionExecutor(NewCanonicalizer())
@@ -339,7 +339,7 @@ func TestExpressionExecutor_MultiEvaluate(t *testing.T) {
 		t.Run("correct_float_value_by_ref", func(t *testing.T) {
 			expressions := contracts.ExpressionsMap{
 				"123": _makeStringRef("=A1"),
-				"A1":  _makeStringRef("=123.34"),
+				"a1":  _makeStringRef("=123.34"),
 			}
 
 			executor := NewExpressionExecutor(NewCanonicalizer())
@@ -363,8 +363,8 @@ func TestExpressionExecutor_outputToString(t *testing.T) {
 func TestExpressionExecutor_ExtractDependingOnList(t *testing.T) {
 	executor := NewExpressionExecutor(NewCanonicalizer())
 
-	assert.Equal(t, []string{"A1", "A2"}, executor.ExtractDependingOnList("=A1+A2"))
-	assert.Equal(t, []string{"A1", "A2"}, executor.ExtractDependingOnList("=4+A1+A2+3"))
+	assert.Equal(t, []string{"a1", "a2"}, executor.ExtractDependingOnList("=A1+A2"))
+	assert.Equal(t, []string{"a1", "a2"}, executor.ExtractDependingOnList("=4+A1+A2+3"))
 
 	assert.Equal(t, []string{}, executor.ExtractDependingOnList("=4"))
 

@@ -5,6 +5,8 @@ volumes:
 
 services:
   api:
+    networks:
+      - app
     build:
       context: src/
     ports:
@@ -22,6 +24,8 @@ services:
       start_period: 1s
 
   postman:
+    networks:
+      - app
     image: postman/newman:alpine
     profiles:
       - testing
@@ -29,13 +33,31 @@ services:
       run DevChallengeExcel.postman_collection.json
       -k -r cli
       --env-var API_HOST=http://api:8080
+      --env-var WEBHOOK_TESTER_HOST=http://webhook-tester:8088
       --iteration-count 2
     volumes:
       - ./postman:/etc/newman
     depends_on:
       api:
         condition: service_healthy
+      webhook-tester:
+        condition: service_healthy
 
+  webhook-tester:
+    networks:
+      - app
+    image: tarampampam/webhook-tester
+    profiles:
+      - testing
+    command: --log-json serve
+    environment:
+      - LISTEN_PORT=8088
+      - STORAGE_DRIVER=memory
+    ports: ['8088:8088/tcp'] # Open <http://127.0.0.1:8088>
+    healthcheck:
+        interval: 2s
+        timeout: 1s
+        retries: 3
 
   unit:
     image: golang:1.21-alpine
@@ -47,6 +69,8 @@ services:
       - ./src:/src:ro
 
   siege:
+    networks:
+        - app
     image: yokogawa/siege
     profiles:
       - testing
@@ -59,3 +83,9 @@ services:
       - ./siege/log:/var/log
     environment:
       - API_HOST=http://api:8080
+
+
+networks:
+  app:
+    driver: bridge
+

@@ -53,6 +53,22 @@ func (_m *ExpressionExecutor) ExtractDependingOnList(expression string) []string
 	return r0
 }
 
+// ExtractExternalRefs provides a mock function with given fields: expression
+func (_m *ExpressionExecutor) ExtractExternalRefs(expression string) []string {
+	ret := _m.Called(expression)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(string) []string); ok {
+		r0 = rf(expression)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // MultiEvaluate provides a mock function with given fields: expressions, sheet, breakOnError
 func (_m *ExpressionExecutor) MultiEvaluate(expressions contracts.ExpressionsMap, sheet contracts.CellValuesGetter, breakOnError bool) error {
 	ret := _m.Called(expressions, sheet, breakOnError)

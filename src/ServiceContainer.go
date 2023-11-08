@@ -11,6 +11,7 @@ type ServiceContainer struct {
 	ApiController      contracts.ApiController
 	SheetRepository    contracts.SheetRepository
 	ExpressionExecutor contracts.ExpressionExecutor
+	WebhookDispatcher  contracts.WebhookDispatcher
 	Router             *gin.Engine
 }
 
@@ -20,8 +21,13 @@ func BuildServiceContainer(configDbPath string) (container ServiceContainer, err
 	canonicalizer := NewCanonicalizer()
 
 	container.ExpressionExecutor = NewExpressionExecutor(canonicalizer)
-	container.SheetRepository = NewSheetRepository(container.Database, container.ExpressionExecutor, serializer, canonicalizer)
-	container.ApiController = NewApiController(container.SheetRepository)
+	container.WebhookDispatcher = NewWebhookDispatcher()
+	container.SheetRepository = NewSheetRepository(
+		container.Database, container.ExpressionExecutor,
+		serializer, canonicalizer,
+		container.WebhookDispatcher,
+	)
+	container.ApiController = NewApiController(container.SheetRepository, container.WebhookDispatcher, container.ExpressionExecutor)
 
 	container.Router = SetupRouter(container.ApiController)
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/ast"
 	"github.com/antonmedv/expr/vm"
 	"strconv"
 	"strings"
@@ -25,15 +26,30 @@ var ExpressionError = errors.New("expression error")
 
 var CircularReferenceError = fmt.Errorf("%w: %s", ExpressionError, "circular reference detected")
 
+var ExpressionFunctions = []expr.Option{
+	maxFunction,
+	minFunction,
+	sumFunction,
+	avgFunction,
+	externalRefFunction,
+}
+
+type FindExternalRefsFunc func(expression string) []string
+
 func NewExpressionExecutor(canonicalizer contracts.Canonicalizer) *ExpressionExecutor {
-	return &ExpressionExecutor{
-		canonicalizer: canonicalizer,
-		compilerOptions: []expr.Option{
+	options := append(
+		[]expr.Option{
 			expr.Env(map[string]any{}),
 			expr.AllowUndefinedVariables(),
 			expr.Optimize(false),
 			expr.DisableAllBuiltins(),
 		},
+		ExpressionFunctions...,
+	)
+
+	return &ExpressionExecutor{
+		canonicalizer:   canonicalizer,
+		compilerOptions: options,
 
 		vmPool: sync.Pool{
 			New: func() any {
@@ -104,6 +120,24 @@ func (e *ExpressionExecutor) ExtractDependingOnList(expression string) []string 
 	}
 
 	return dependants
+}
+
+func (e *ExpressionExecutor) ExtractExternalRefs(expression string) []string {
+	// not formula
+	if !e.IsFormula(expression) {
+		return make([]string, 0)
+	}
+
+	program, err := e.compile(expression)
+	if err != nil {
+		return make([]string, 0)
+	}
+
+	finder := &FindExternalRefsVisitor{
+		externalRefs: make([]string, 0, len(program.Functions)),
+	}
+	ast.Walk(&program.Node, finder)
+	return finder.externalRefs
 }
 
 func (e *ExpressionExecutor) compile(expression string) (*vm.Program, error) {
@@ -215,6 +249,8 @@ func (e *ExpressionExecutor) outputToString(output any, err error) string {
 
 func (e *ExpressionExecutor) toString(input any) string {
 	switch input.(type) {
+	case int64:
+		return strconv.FormatInt(input.(int64), 10)
 	case int:
 		return strconv.Itoa(input.(int))
 	case float64:

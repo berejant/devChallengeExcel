@@ -12,7 +12,7 @@ type Canonicalizer struct {
 }
 
 func NewCanonicalizer() *Canonicalizer {
-	removeChars := strings.Split(".,:;[]{}#?@\\~`\"'", "")
+	removeChars := strings.Split(".;[]{}#?@\\~`", "")
 	// we use string to upper to prevent using operators
 	//	removeOperators := strings.Split("$env,not,or,and,matches,contains,startsWith,endsWith", ",")
 
@@ -31,7 +31,7 @@ func NewCanonicalizer() *Canonicalizer {
 
 func (c *Canonicalizer) Canonicalize(s string) string {
 	return c.keepDotInFloatRegex.ReplaceAllString(
-		c.replacer.Replace(strings.ToUpper(s)),
+		c.replacer.Replace(strings.ToLower(s)),
 		"$1.$2",
 	)
 }

@@ -9,11 +9,12 @@ import (
 )
 
 type SheetRepository struct {
-	db             *bbolt.DB
-	executor       contracts.ExpressionExecutor
-	serializer     contracts.CellSerializer
-	canonicalizer  contracts.Canonicalizer
-	dependencyTree contracts.CellDependencyTree
+	db                *bbolt.DB
+	executor          contracts.ExpressionExecutor
+	serializer        contracts.CellSerializer
+	canonicalizer     contracts.Canonicalizer
+	dependencyTree    contracts.CellDependencyTree
+	webhookDispatcher contracts.WebhookDispatcher
 }
 
 var errorNoChanges = fmt.Errorf("no changes")
@@ -21,54 +22,69 @@ var errorNoChanges = fmt.Errorf("no changes")
 func NewSheetRepository(
 	db *bbolt.DB, executor contracts.ExpressionExecutor,
 	serializer contracts.CellSerializer, canonicalizer contracts.Canonicalizer,
+	webhookDispatcher contracts.WebhookDispatcher,
 ) *SheetRepository {
 	return &SheetRepository{
-		db:             db,
-		executor:       executor,
-		serializer:     serializer,
-		canonicalizer:  canonicalizer,
-		dependencyTree: &CellDependencyTree{},
+		db:                db,
+		executor:          executor,
+		serializer:        serializer,
+		canonicalizer:     canonicalizer,
+		dependencyTree:    &CellDependencyTree{},
+		webhookDispatcher: webhookDispatcher,
 	}
 }
 
-func (s *SheetRepository) SetCell(sheetId string, cellId string, value string) (cell *contracts.Cell, err error) {
-	sheetId = strings.ToLower(sheetId)
-	sheetIdByte := []byte(sheetId)
+func (s *SheetRepository) GetCanonicalSheetId(sheetId string) string {
+	return strings.ToLower(sheetId)
+}
 
-	cell = &contracts.Cell{Value: value}
+func (s *SheetRepository) SetCell(sheetId string, cellId string, value string, skipNotChanged bool) (cell *contracts.Cell, err error, isUpdated bool) {
+	sheetId = s.GetCanonicalSheetId(sheetId)
+	sheetIdByte := []byte(sheetId)
 
 	if strings.ContainsAny(cellId, contracts.CellIdBlacklist) {
 		err = fmt.Errorf("cell_id `%s`: %w", cellId, contracts.CellIdBlacklistError)
+		cell = &contracts.Cell{Value: value}
 		return
 	}
 
-	canonicalKey := s.canonicalizer.Canonicalize(cellId)
-	canonicalKeyByte := []byte(canonicalKey)
+	cellCanonicalKey := s.canonicalizer.Canonicalize(cellId)
+	cellCanonicalKeyByte := []byte(cellCanonicalKey)
 	serializedData := s.serializer.Marshal(cellId, value)
 
+	cell = &contracts.Cell{
+		CanonicalKey: cellCanonicalKey,
+		Value:        value,
+		Result:       value,
+	}
+
 	var dependants []string
+	var dependantsCellList []*contracts.Cell
 
 	err = s.db.View(func(tx *bbolt.Tx) (err error) {
 		readBucket := tx.Bucket(sheetIdByte)
 		if readBucket == nil {
 			dependants = make([]string, 0)
 		} else {
-			if bytes.Equal(readBucket.Get(canonicalKeyByte), serializedData) {
+			if skipNotChanged && bytes.Equal(readBucket.Get(cellCanonicalKeyByte), serializedData) {
 				cell.Result, err = s.executor.Evaluate(cell.Value, s.makeValuesGetter(tx, sheetIdByte))
 				return errorNoChanges
 			}
 
-			dependants = s.dependencyTree.GetDependants(tx, sheetIdByte, canonicalKey)
+			dependants = s.dependencyTree.GetDependants(tx, sheetIdByte, cellCanonicalKey)
 		}
 
-		cell.Result, err = s.executeWithDependantsCells(tx, sheetIdByte, canonicalKey, value, dependants)
-		if err != nil {
-			return
+		dependantsCellList = s.makeDependantsCellList(tx, sheetIdByte, cell, dependants)
+		expressions := make(contracts.ExpressionsMap, len(dependantsCellList))
+		for i := range dependantsCellList {
+			expressions[dependantsCellList[i].CanonicalKey] = &dependantsCellList[i].Result
 		}
 
+		err = s.executor.MultiEvaluate(expressions, s.makeValuesGetter(tx, sheetIdByte), true)
 		return err
 	})
 
+	isUpdated = err == nil
 	if err != nil {
 		if err == errorNoChanges {
 			err = nil
@@ -85,26 +101,47 @@ func (s *SheetRepository) SetCell(sheetId string, cellId string, value string) (
 			return err
 		}
 
-		err = s.dependencyTree.SetDependsOn(tx, sheetIdByte, canonicalKey, dependingOnList)
+		err = s.dependencyTree.SetDependsOn(tx, sheetIdByte, cellCanonicalKey, dependingOnList)
 		if err != nil {
 			return
 		}
 
-		return bucket.Put(canonicalKeyByte, serializedData)
+		return bucket.Put(cellCanonicalKeyByte, serializedData)
 	})
+
+	s.webhookDispatcher.Notify(sheetId, dependantsCellList)
 
 	return
 }
 
+func (s *SheetRepository) makeDependantsCellList(tx *bbolt.Tx, sheetId []byte, thisCell *contracts.Cell, dependants []string) []*contracts.Cell {
+	values := s.getCellValues(tx, sheetId, dependants)
+
+	dependantsCellList := make([]*contracts.Cell, 0, len(dependants)+1)
+	dependantsCellList = append(dependantsCellList, thisCell)
+
+	for index, dependantCanonicalCellId := range dependants {
+		if values[index] != nil {
+			dependantsCellList = append(dependantsCellList, &contracts.Cell{
+				CanonicalKey: dependantCanonicalCellId,
+				Value:        *values[index],
+				Result:       *values[index],
+			})
+		}
+	}
+
+	return dependantsCellList
+}
+
 func (s *SheetRepository) GetCell(sheetId string, cellId string) (cell *contracts.Cell, err error) {
-	sheetId = strings.ToLower(sheetId)
+	sheetId = s.GetCanonicalSheetId(sheetId)
 
-	cell = &contracts.Cell{}
 	var byteValue []byte
-
 	sheetIdByte := []byte(sheetId)
-
-	canonicalKey := []byte(s.canonicalizer.Canonicalize(cellId))
+	cell = &contracts.Cell{
+		CanonicalKey: s.canonicalizer.Canonicalize(cellId),
+	}
+	canonicalKey := []byte(cell.CanonicalKey)
 	err = s.db.View(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket(sheetIdByte)
 		if bucket == nil {
@@ -148,8 +185,9 @@ func (s *SheetRepository) GetCellList(sheetId string) (*contracts.CellList, erro
 			key, value, err := s.serializer.Unmarshal(v)
 			if err == nil {
 				cellList[key] = &contracts.Cell{
-					Value:  value,
-					Result: value,
+					CanonicalKey: canonicalCellId,
+					Value:        value,
+					Result:       value,
 				}
 				expressions[canonicalCellId] = &cellList[key].Result
 			}
@@ -191,20 +229,4 @@ func (s *SheetRepository) getCellValues(tx *bbolt.Tx, sheetId []byte, canonicalC
 	}
 
 	return values
-}
-
-func (s *SheetRepository) executeWithDependantsCells(tx *bbolt.Tx, sheetId []byte, cellId string, cellResult string, dependants []string) (string, error) {
-	expressions := contracts.ExpressionsMap{
-		cellId: &cellResult,
-	}
-
-	values := s.getCellValues(tx, sheetId, dependants)
-	for index, dependingCellId := range dependants {
-		if values[index] != nil {
-			expressions[dependingCellId] = values[index]
-		}
-	}
-
-	err := s.executor.MultiEvaluate(expressions, s.makeValuesGetter(tx, sheetId), true)
-	return *expressions[cellId], err
 }

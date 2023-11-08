@@ -11,23 +11,29 @@ Implementation of [Online Round Task Backend | DEV Challenge XX](https://app.dev
 5. [Postman](https://www.postman.com/) - Useful tool to make API functional tests and run it with [newman-docker](https://hub.docker.com/r/postman/newman/)
 
 ## Features
-1. [x] Set cell value
-2. [x] Get cell value
-3. [x] Get cell list
-4. [x] Support multiple sheets
-5. [x] Evaluate formula expression.
-6. [x] Case-insensitive cell and sheet names
-7. [x] Support `+`, `-`, `*`, `/`, `^` operators
-8. [x] Support parentheses (e.g. `((1+2)*3)`)
-9. [x] High performance. RPS >1800 with 6 CPU Apple M2 and >1300 with 4 CPU Intel i5.
-10. [x] Check referencing cells on evaluation errors
-11. [x] Prevent circular references
-12. [x] Support digits and strings
-13. [x] Support number and float as cell name (e.g. `1`, `4.5`). Let's define that `5=100` and `5.5=250`. Enjoy!
-14. [x] Permanent storage on disk
+1. [x] Final round. Webhook support (test covered with Postman and webhook-tester docker image).
+2. [x] Final round. Support MAX, MIN, AVG, SUM functions. (covered by Postman tests)
+3. [x] Final round. Support EXTERNAL_REF function. (covered by Postman tests)
+4. [x] Final round. Recursive subscription and webhook between sheets and API instances. (covered by Postman tests)
+5. [x] Set cell value
+6. [x] Get cell value
+7. [x] Get cell list
+8. [x] Support multiple sheets
+9. [x] Evaluate formula expression.
+10. [x] Case-insensitive cell and sheet names
+11. [x] Support `+`, `-`, `*`, `/`, `^` operators
+12. [x] Support parentheses (e.g. `((1+2)*3)`)
+13. [x] High performance. RPS >1800 with 6 CPU Apple M2 and >1300 with 4 CPU Intel i5.
+14. [x] Check referencing cells on evaluation errors
+15. [x] Prevent circular references
+16. [x] Support digits and strings
+17. [x] Support number and float as cell name (e.g. `1`, `4.5`). Let's define that `5=100` and `5.5=250`. Enjoy!
+18. [x] Permanent storage on disk
 
 ## Run app
-> docker compose up
+```shell
+docker compose up
+```
 
 ## See it works:
 ```shell
@@ -48,24 +54,25 @@ Example results:
 ├─────────────────────────┼───────────────────┼──────────────────┤
 │              iterations │                 2 │                0 │
 ├─────────────────────────┼───────────────────┼──────────────────┤
-│                requests │               262 │                0 │
+│                requests │               300 │                0 │
 ├─────────────────────────┼───────────────────┼──────────────────┤
-│            test-scripts │               462 │                0 │
+│            test-scripts │               500 │                0 │
 ├─────────────────────────┼───────────────────┼──────────────────┤
-│      prerequest-scripts │               392 │                0 │
+│      prerequest-scripts │               398 │                0 │
 ├─────────────────────────┼───────────────────┼──────────────────┤
-│              assertions │               544 │                0 │
+│              assertions │               622 │                0 │
 ├─────────────────────────┴───────────────────┴──────────────────┤
-│ total run duration: 18.1s                                      │
+│ total run duration: 22.5s                                      │
 ├────────────────────────────────────────────────────────────────┤
-│ total data received: 27.35kB (approx)                          │
+│ total data received: 32.96kB (approx)                          │
 ├────────────────────────────────────────────────────────────────┤
-│ average response time: 17ms [min: 6ms, max: 254ms, s.d.: 20ms] │
+│ average response time: 17ms [min: 6ms, max: 321ms, s.d.: 19ms] │
 └────────────────────────────────────────────────────────────────┘
+
 ```
 
 ## Run unit tests
-Application has 100% unit test coverage. Run unit tests:
+Application has >75% unit test coverage. Run unit tests:
 ```shell
 docker compose run unit
 ```
@@ -78,7 +85,8 @@ devChallengeExcel/ApiController.go:29:          NewApiController                
 devChallengeExcel/SheetRepository.go:32:		SetCell				100.0%
 devChallengeExcel/SheetRepository.go:76:		GetCell				100.0%
 devChallengeExcel/SheetRepository.go:110:		GetCellList			100.0%
-total:							(statements)			100.0%
+coverage: 84.6% of statements
+total:                                                  (statements)                    78.4%
 ```
 
 ## Run load testing
@@ -112,6 +120,12 @@ Shortest transaction:	        0.00
 ## Corner cases
 
 Application and tests cover corner cases listed below. This list not exhaustive.
+
+ - Final round:
+recursive subscription and webhook between sheets and API instance.
+Example: cell A = EXTERNAL_REF(B) => B => EXTERNAL_REF(C); On change C, A and B will be updated and subscriptions for A will be called.
+
+
  - Max length for cell name and sheet name is 32768 (BBolt limit). With special chars in cell name it's less.
  - Support digit cell names (e.g. `1`, `2.5`).
  - In case with digit cell name, it's possible to use it as a digit in formula (e.g. set `10=50` and then formula `=10+2.5` will be evaluated as `50 + 2.5 => 52.5`).

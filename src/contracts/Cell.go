@@ -7,8 +7,9 @@ import (
 )
 
 type Cell struct {
-	Value  string `json:"value"`
-	Result string `json:"result"`
+	CanonicalKey string `json:"-"`
+	Value        string `json:"value"`
+	Result       string `json:"result"`
 }
 
 // CellIdBlacklist deny charset which associate with operators

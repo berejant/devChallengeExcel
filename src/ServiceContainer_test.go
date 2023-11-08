@@ -30,6 +30,10 @@ func TestBuildServiceContainer(t *testing.T) {
 	expressionExecutor := serviceContainer.ExpressionExecutor.(*ExpressionExecutor)
 	assert.IsType(t, &Canonicalizer{}, expressionExecutor.canonicalizer)
 
+	// check webhook dispatcher
+	assert.NotNil(t, serviceContainer.WebhookDispatcher)
+	assert.IsType(t, &WebhookDispatcher{}, serviceContainer.WebhookDispatcher)
+
 	// check sheet repository
 	assert.NotNil(t, serviceContainer.SheetRepository)
 	assert.IsType(t, &SheetRepository{}, serviceContainer.SheetRepository)
@@ -38,6 +42,7 @@ func TestBuildServiceContainer(t *testing.T) {
 	assert.NotNil(t, sheetRepository.db)
 	assert.Equal(t, serviceContainer.Database, sheetRepository.db)
 	assert.Equal(t, serviceContainer.ExpressionExecutor, sheetRepository.executor)
+	assert.Equal(t, serviceContainer.WebhookDispatcher, sheetRepository.webhookDispatcher)
 
 	assert.NotNil(t, sheetRepository.serializer)
 	assert.IsType(t, &CellBinarySerializer{}, sheetRepository.serializer)
@@ -53,6 +58,8 @@ func TestBuildServiceContainer(t *testing.T) {
 	apiController := serviceContainer.ApiController.(*ApiController)
 	assert.NotNil(t, apiController.SheetRepository)
 	assert.Equal(t, serviceContainer.SheetRepository, apiController.SheetRepository)
+	assert.NotNil(t, apiController.WebhookDispatcher)
+	assert.Equal(t, serviceContainer.WebhookDispatcher, apiController.WebhookDispatcher)
 
 	// check router
 	assert.NotNil(t, serviceContainer.Router)

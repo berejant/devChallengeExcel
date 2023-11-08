@@ -33,7 +33,7 @@ func TestApiController_GetCellAction(t *testing.T) {
 				Result: "value1",
 			}, nil)
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToGetCellAction(apiController)
 		response, err := _parseJsonBody(w)
@@ -50,7 +50,7 @@ func TestApiController_GetCellAction(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
 		sheetRepository.On("GetCell", "sheet1", "cell1").Return(nil, contracts.CellNotFoundError)
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToGetCellAction(apiController)
 		response, err := _parseJsonBody(w)
@@ -65,7 +65,7 @@ func TestApiController_GetCellAction(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
 		sheetRepository.On("GetCell", "sheet1", "cell1").Return(nil, contracts.SheetNotFoundError)
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToGetCellAction(apiController)
 		response, err := _parseJsonBody(w)
@@ -80,7 +80,7 @@ func TestApiController_GetCellAction(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
 		sheetRepository.On("GetCell", "sheet1", "cell1").Return(nil, errors.New("test"))
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToGetCellAction(apiController)
 
@@ -110,10 +110,10 @@ func TestApiController_SetCellAction(t *testing.T) {
 
 	t.Run("success write", func(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
-		sheetRepository.On("SetCell", "sheet1", "cell1", "value1").
-			Return(&contracts.Cell{Value: "value1"}, nil)
+		sheetRepository.On("SetCell", "sheet1", "cell1", "value1", true).
+			Return(&contracts.Cell{Value: "value1"}, nil, false)
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToSetCellAction(apiController, map[string]string{"value": "value1"})
 		response, err := _parseJsonBody(w)
@@ -126,10 +126,10 @@ func TestApiController_SetCellAction(t *testing.T) {
 
 	t.Run("error", func(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
-		sheetRepository.On("SetCell", "sheet1", "cell1", "value1").
-			Return(nil, errors.New("test"))
+		sheetRepository.On("SetCell", "sheet1", "cell1", "value1", true).
+			Return(nil, errors.New("test"), false)
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToSetCellAction(apiController, map[string]string{"value": "value1"})
 		response, err := _parseJsonBody(w)
@@ -171,7 +171,7 @@ func TestApiController_GetSheetAction(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
 		sheetRepository.On("GetCellList", "sheet1").Return(list, nil)
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToGetSheetAction(apiController)
 		response, err := _parseJsonBody(w)
@@ -195,7 +195,7 @@ func TestApiController_GetSheetAction(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
 		sheetRepository.On("GetCellList", "sheet1").Return(nil, contracts.SheetNotFoundError)
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToGetSheetAction(apiController)
 		response, err := _parseJsonBody(w)
@@ -211,7 +211,7 @@ func TestApiController_GetSheetAction(t *testing.T) {
 		sheetRepository := mocks.NewSheetRepository(t)
 		sheetRepository.On("GetCellList", "sheet1").Return(nil, errors.New("test"))
 
-		apiController := NewApiController(sheetRepository)
+		apiController := NewApiController(sheetRepository, nil, nil)
 
 		w := requestToGetSheetAction(apiController)
 		response, err := _parseJsonBody(w)

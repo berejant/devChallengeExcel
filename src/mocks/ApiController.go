@@ -12,6 +12,11 @@ type ApiController struct {
 	mock.Mock
 }
 
+// ExternalRefWebhookAction provides a mock function with given fields: c
+func (_m *ApiController) ExternalRefWebhookAction(c *gin.Context) {
+	_m.Called(c)
+}
+
 // GetCellAction provides a mock function with given fields: c
 func (_m *ApiController) GetCellAction(c *gin.Context) {
 	_m.Called(c)
@@ -27,13 +32,18 @@ func (_m *ApiController) SetCellAction(c *gin.Context) {
 	_m.Called(c)
 }
 
-type mockConstructorTestingTNewApiControllerInterface interface {
+// SubscribeAction provides a mock function with given fields: c
+func (_m *ApiController) SubscribeAction(c *gin.Context) {
+	_m.Called(c)
+}
+
+type mockConstructorTestingTNewApiController interface {
 	mock.TestingT
 	Cleanup(func())
 }
 
 // NewApiController creates a new instance of ApiController. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func NewApiController(t mockConstructorTestingTNewApiControllerInterface) *ApiController {
+func NewApiController(t mockConstructorTestingTNewApiController) *ApiController {
 	mock := &ApiController{}
 	mock.Mock.Test(t)
 

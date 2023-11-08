@@ -378,10 +378,55 @@
 			]
 		},
 		{
-			"name": "Exotic char in cell_id",
+			"name": "Subscribe webhook",
 			"item": [
 				{
-					"name": "Set cell",
+					"name": "Create webhook for cell1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									" ",
+									"let jsonData = pm.response.json();",
+									"pm.environment.set(\"CELL1_WEBHOOK_UUID\", jsonData.uuid);",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.unset(\"CELL1_WEBHOOK_UUID\")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session",
+							"host": [
+								"{{WEBHOOK_TESTER_HOST}}"
+							],
+							"path": [
+								"api",
+								"session"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set webhook cell1",
 					"event": [
 						{
 							"listen": "test",
@@ -394,8 +439,12 @@
 									"pm.test(\"Response value\", function () {",
 									"    var jsonData = pm.response.json();",
 									"",
-									"    pm.expect(jsonData.value).to.eql('2.5')",
-									"    pm.expect(jsonData.result).to.eql('2.5')",
+									"    const WEBHOOK_TESTER_HOST = pm.environment.get(\"WEBHOOK_TESTER_HOST\")",
+									"    const CELL1_WEBHOOK_UUID = pm.environment.get(\"CELL1_WEBHOOK_UUID\")",
+									"",
+									"    const webhookUrl = WEBHOOK_TESTER_HOST + \"/\" + CELL1_WEBHOOK_UUID",
+									"",
+									"    pm.expect(jsonData.webhook_url).to.eql(webhookUrl)",
 									"});"
 								],
 								"type": "text/javascript"
@@ -407,7 +456,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\":\"2.5\"\n}",
+							"raw": "{\n    \"webhook_url\":\"{{WEBHOOK_TESTER_HOST}}/{{CELL1_WEBHOOK_UUID}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -415,22 +464,782 @@
 							}
 						},
 						"url": {
-							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/cell.val.1{}[]$@:.%3Fa",
+							"raw": "{{API_HOST}}/api/v1/sheet1/cell1/subscribe",
 							"host": [
 								"{{API_HOST}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"exotic-sheet1",
-								"cell.val.1{}[]$@:.%3Fa"
+								"sheet1",
+								"cell1",
+								"subscribe"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get cell",
+					"name": "Create webhook for formula1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									" ",
+									"let jsonData = pm.response.json();",
+									"pm.environment.set(\"FORMULA1_WEBHOOK_UUID\", jsonData.uuid);",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.unset(\"FORMULA1_WEBHOOK_UUID\")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session",
+							"host": [
+								"{{WEBHOOK_TESTER_HOST}}"
+							],
+							"path": [
+								"api",
+								"session"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set webhook formula1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    const WEBHOOK_TESTER_HOST = pm.environment.get(\"WEBHOOK_TESTER_HOST\")",
+									"    const FORMULA1_WEBHOOK_UUID = pm.environment.get(\"FORMULA1_WEBHOOK_UUID\")",
+									"",
+									"    const webhookUrl = WEBHOOK_TESTER_HOST + \"/\" + FORMULA1_WEBHOOK_UUID",
+									"",
+									"    pm.expect(jsonData.webhook_url).to.eql(webhookUrl)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"webhook_url\":\"{{WEBHOOK_TESTER_HOST}}/{{FORMULA1_WEBHOOK_UUID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/formula1/subscribe",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"formula1",
+								"subscribe"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Cell1 Value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('3')",
+									"    pm.expect(jsonData.result).to.eql('3')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1/cell1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1",
+								"cell1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check cell1 webhook history",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"const lastWebhookRequest = jsonData[0];",
+									"",
+									"pm.test(\"Webhook called\", function () {",
+									"    pm.expect(lastWebhookRequest).be.an('object');",
+									"    pm.expect(lastWebhookRequest.method).to.eql(\"POST\")",
+									"});",
+									"",
+									"",
+									"pm.test(\"validate webhook body\", function () {",
+									"    postData = atob(lastWebhookRequest.content_base64);",
+									"",
+									"    postDataJson = JSON.parse(postData)",
+									"    pm.expect(Object.keys(postDataJson).length).to.eql(2)",
+									"    pm.expect(postDataJson.value).to.eql(\"3\")",
+									"    pm.expect(postDataJson.result).to.eql(\"3\")",
+									"})",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session/{{CELL1_WEBHOOK_UUID}}/requests",
+							"host": [
+								"{{WEBHOOK_TESTER_HOST}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"{{CELL1_WEBHOOK_UUID}}",
+								"requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check formula1 webhook history Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"const lastWebhookRequest = jsonData[0];",
+									"",
+									"pm.test(\"Webhook called\", function () {",
+									"    pm.expect(lastWebhookRequest).be.an('object');",
+									"    pm.expect(lastWebhookRequest.method).to.eql(\"POST\")",
+									"});",
+									"",
+									"",
+									"pm.test(\"validate webhook body\", function () {",
+									"    postData = atob(lastWebhookRequest.content_base64);",
+									"",
+									"    postDataJson = JSON.parse(postData)",
+									"    pm.expect(Object.keys(postDataJson).length).to.eql(2)",
+									"    pm.expect(postDataJson.value).to.eql(\"= cell1 * 2 + (4 * cell2)\")",
+									"    pm.expect(postDataJson.result).to.eql(\"34\")",
+									"})",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session/{{FORMULA1_WEBHOOK_UUID}}/requests",
+							"host": [
+								"{{WEBHOOK_TESTER_HOST}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"{{FORMULA1_WEBHOOK_UUID}}",
+								"requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get sheet validate after webhook",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"pm.test(\"Response cell1\", function () {",
+									"    pm.expect(jsonData.cell1).to.be.an('object')",
+									"    pm.expect(jsonData.cell1.value).to.eql(\"3\")",
+									"    pm.expect(jsonData.cell1.result).to.eql(\"3\")",
+									"});",
+									"",
+									"pm.test(\"Response cell2\", function () {",
+									"    pm.expect(jsonData.cell2).to.be.an('object')",
+									"    pm.expect(jsonData.cell2.value).to.eql(\"7\")",
+									"    pm.expect(jsonData.cell2.result).to.eql(\"7\")",
+									"});",
+									"",
+									"pm.test(\"Response formula1\", function () {",
+									"    pm.expect(jsonData.formula1).to.be.an('object')",
+									"    pm.expect(jsonData.formula1.value).to.be.an('string')",
+									"    pm.expect(jsonData.formula1.value[0]).to.eql('=')",
+									"    pm.expect(jsonData.formula1.result).to.eql(\"34\")",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/sheet1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sheet1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Math functions",
+			"item": [
+				{
+					"name": "Set a",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('25.5')",
+									"    pm.expect(jsonData.result).to.eql('25.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"25.5\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/math/a",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"math",
+								"a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set b",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('15')",
+									"    pm.expect(jsonData.result).to.eql('15')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"15\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/math/b",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"math",
+								"b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "function max",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=MAX(a, b)')",
+									"    pm.expect(jsonData.result).to.eql('25.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=MAX(a, b)\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/math/maxValue",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"math",
+								"maxValue"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "function min",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=min(a, b)')",
+									"    pm.expect(jsonData.result).to.eql('15')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=min(a, b)\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/math/minValue",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"math",
+								"minValue"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "function sum",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=sUm(a, b)')",
+									"    pm.expect(jsonData.result).to.eql('40.5')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=sUm(a, b)\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/math/sumValue",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"math",
+								"sumValue"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "function avg",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('=avg(a, b)')",
+									"    pm.expect(jsonData.result).to.eql('20.25')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=avg(a, b)\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/math/minValue",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"math",
+								"minValue"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ExternalRef and recursion subsrcibe",
+			"item": [
+				{
+					"name": "Set currency rate USD",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('37.6')",
+									"    pm.expect(jsonData.result).to.eql('37.6')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"37.6\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/currencyRate/USD",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currencyRate",
+								"USD"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set amount (based on currency of USD by ref)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.result).to.eql('3760')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=EXTERNAL_REF(\\\"{{API_HOST}}/api/v1/currencyRate/USD\\\") * 100\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/amount/amount1",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amount",
+								"amount1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set sum formula",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.result).to.eql('3795')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=SUM(amount1, 35)\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/amount/sumFormula",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amount",
+								"sumFormula"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get amount sheet",
 					"event": [
 						{
 							"listen": "test",
@@ -443,8 +1252,7 @@
 									"pm.test(\"Response value\", function () {",
 									"    var jsonData = pm.response.json();",
 									"",
-									"    pm.expect(jsonData.value).to.eql('2.5')",
-									"    pm.expect(jsonData.result).to.eql('2.5')",
+									"    pm.expect(jsonData.amount1.result).to.eql('3760')",
 									"});"
 								],
 								"type": "text/javascript"
@@ -459,7 +1267,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\":\"2.5\"\n}",
+							"raw": "{\n    \"value\":\"=EXTERNAL_REF(\\\"{{API_HOST}}/api/v1/currencyRate/USD\\\") * 1290\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -467,22 +1275,66 @@
 							}
 						},
 						"url": {
-							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/cell.val.1{}[]$@:.%3Fa",
+							"raw": "{{API_HOST}}/api/v1/amount",
 							"host": [
 								"{{API_HOST}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"exotic-sheet1",
-								"cell.val.1{}[]$@:.%3Fa"
+								"amount"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Set formula with exotic chars",
+					"name": "Create webhook for amount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									" ",
+									"let jsonData = pm.response.json();",
+									"pm.environment.set(\"AMOUNT_WEBHOOK_UUID\", jsonData.uuid);",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.unset(\"AMOUNT_WEBHOOK_UUID\")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session",
+							"host": [
+								"{{WEBHOOK_TESTER_HOST}}"
+							],
+							"path": [
+								"api",
+								"session"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set webhook amount1",
 					"event": [
 						{
 							"listen": "test",
@@ -495,8 +1347,12 @@
 									"pm.test(\"Response value\", function () {",
 									"    var jsonData = pm.response.json();",
 									"",
-									"    pm.expect(jsonData.value).to.eql(JSON.parse(pm.request.body.raw).value)",
-									"    pm.expect(jsonData.result).to.eql('12.5')",
+									"    const WEBHOOK_TESTER_HOST = pm.environment.get(\"WEBHOOK_TESTER_HOST\")",
+									"    const AMOUNT_WEBHOOK_UUID = pm.environment.get(\"AMOUNT_WEBHOOK_UUID\")",
+									"",
+									"    const webhookUrl = WEBHOOK_TESTER_HOST + \"/\" + AMOUNT_WEBHOOK_UUID",
+									"",
+									"    pm.expect(jsonData.webhook_url).to.eql(webhookUrl)",
 									"});"
 								],
 								"type": "text/javascript"
@@ -508,7 +1364,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\":\"=cell.val.1{}[]$@:.?a+10\"\n}",
+							"raw": "{\n    \"webhook_url\":\"{{WEBHOOK_TESTER_HOST}}/{{AMOUNT_WEBHOOK_UUID}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -516,22 +1372,171 @@
 							}
 						},
 						"url": {
-							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/formula1",
+							"raw": "{{API_HOST}}/api/v1/amount/amount1/subscribe",
 							"host": [
 								"{{API_HOST}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"exotic-sheet1",
-								"formula1"
+								"amount",
+								"amount1",
+								"subscribe"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get formula with exotic chars",
+					"name": "Create webhook for sum formula",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									" ",
+									"let jsonData = pm.response.json();",
+									"pm.environment.set(\"SUMFORMULA_WEBHOOK_UUID\", jsonData.uuid);",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.unset(\"SUMFORMULA_WEBHOOK_UUID\")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session",
+							"host": [
+								"{{WEBHOOK_TESTER_HOST}}"
+							],
+							"path": [
+								"api",
+								"session"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set webhook sum formula",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    const WEBHOOK_TESTER_HOST = pm.environment.get(\"WEBHOOK_TESTER_HOST\")",
+									"    const SUMFORMULA_WEBHOOK_UUID = pm.environment.get(\"SUMFORMULA_WEBHOOK_UUID\")",
+									"",
+									"    const webhookUrl = WEBHOOK_TESTER_HOST + \"/\" + SUMFORMULA_WEBHOOK_UUID",
+									"",
+									"    pm.expect(jsonData.webhook_url).to.eql(webhookUrl)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"webhook_url\":\"{{WEBHOOK_TESTER_HOST}}/{{SUMFORMULA_WEBHOOK_UUID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/amount/sumFormula/subscribe",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amount",
+								"sumFormula",
+								"subscribe"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change USD currency",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response value\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData.value).to.eql('46')",
+									"    pm.expect(jsonData.result).to.eql('46')",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"46\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/currencyRate/USD",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"currencyRate",
+								"USD"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get amount 2",
 					"event": [
 						{
 							"listen": "test",
@@ -541,13 +1546,76 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"const exoticCellId = 'cell.val.1{}[]$@:.?a'",
 									"pm.test(\"Response value\", function () {",
 									"    var jsonData = pm.response.json();",
 									"",
-									"    pm.expect(jsonData.value).to.eql(\"=\" + exoticCellId + \"+10\")",
-									"    pm.expect(jsonData.result).to.eql('12.5')",
+									"    pm.expect(jsonData.amount1.result).to.eql('4600')",
 									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\":\"=EXTERNAL_REF(\\\"{{API_HOST}}/api/v1/currencyRate/USD\\\") * 1290\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_HOST}}/api/v1/amount",
+							"host": [
+								"{{API_HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"amount"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check amount1 webhook history",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"const lastWebhookRequest = jsonData[0];",
+									"",
+									"pm.test(\"Webhook called\", function () {",
+									"    pm.expect(lastWebhookRequest).be.an('object');",
+									"    pm.expect(lastWebhookRequest.method).to.eql(\"POST\")",
+									"});",
+									"",
+									"",
+									"pm.test(\"validate webhook body\", function () {",
+									"    postData = atob(lastWebhookRequest.content_base64);",
+									"",
+									"    postDataJson = JSON.parse(postData)",
+									"    pm.expect(Object.keys(postDataJson).length).to.eql(2)",
+									"    pm.expect(postDataJson.result).to.eql(\"4600\")",
+									"})",
+									"",
+									"",
+									"",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -557,15 +1625,69 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{API_HOST}}/api/v1/exotic-sheet1/formula1",
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session/{{AMOUNT_WEBHOOK_UUID}}/requests",
 							"host": [
-								"{{API_HOST}}"
+								"{{WEBHOOK_TESTER_HOST}}"
 							],
 							"path": [
 								"api",
-								"v1",
-								"exotic-sheet1",
-								"formula1"
+								"session",
+								"{{AMOUNT_WEBHOOK_UUID}}",
+								"requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check formula1webhook history",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData = pm.response.json();",
+									"const lastWebhookRequest = jsonData[0];",
+									"",
+									"pm.test(\"Webhook called\", function () {",
+									"    pm.expect(lastWebhookRequest).be.an('object');",
+									"    pm.expect(lastWebhookRequest.method).to.eql(\"POST\")",
+									"});",
+									"",
+									"",
+									"pm.test(\"validate webhook body\", function () {",
+									"    postData = atob(lastWebhookRequest.content_base64);",
+									"",
+									"    postDataJson = JSON.parse(postData)",
+									"    pm.expect(Object.keys(postDataJson).length).to.eql(2)",
+									"    pm.expect(postDataJson.result).to.eql(\"4635\")",
+									"})",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{WEBHOOK_TESTER_HOST}}/api/session/{{SUMFORMULA_WEBHOOK_UUID}}/requests",
+							"host": [
+								"{{WEBHOOK_TESTER_HOST}}"
+							],
+							"path": [
+								"api",
+								"session",
+								"{{SUMFORMULA_WEBHOOK_UUID}}",
+								"requests"
 							]
 						}
 					},
@@ -718,55 +1840,6 @@
 								"v1",
 								"reservedWord",
 								"or"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Set formula or * and",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"pm.test(\"Response value\", function () {",
-									"    var jsonData = pm.response.json();",
-									"",
-									"    pm.expect(jsonData.value).to.eql('= or * and')",
-									"    pm.expect(jsonData.result).to.eql('220.8')",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"value\":\"= or * and\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{API_HOST}}/api/v1/reservedWord/formula",
-							"host": [
-								"{{API_HOST}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"reservedWord",
-								"formula"
 							]
 						}
 					},

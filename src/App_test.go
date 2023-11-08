@@ -21,14 +21,25 @@ func TestRunApp(t *testing.T) {
 		_ = os.Setenv("DATABASE_FILEPATH", f.Name())
 		defer os.Unsetenv("DATABASE_FILEPATH")
 
-		go RunApp()
+		var appErr error
+		go func() {
+			appErr = RunApp()
+		}()
 		runtime.Gosched()
 
 		var err error
 		var res *http.Response
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 3; i++ {
+			if appErr != nil {
+				t.Errorf("RunApp() error = %v", appErr)
+				break
+			}
+
 			time.Sleep(50 * time.Millisecond)
-			res, err = http.Get("http://localhost:8080/healthcheck")
+			client := http.Client{
+				Timeout: time.Second * 2,
+			}
+			res, err = client.Get("http://localhost:8080/healthcheck")
 			if err == nil {
 				break
 			}
