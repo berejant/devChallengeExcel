@@ -3,9 +3,9 @@ package main
 import (
 	"bytes"
 	"devChallengeExcel/contracts"
-	"encoding/json"
 	"errors"
 	"fmt"
+	json "github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"

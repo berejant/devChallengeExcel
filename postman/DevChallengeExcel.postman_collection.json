@@ -1967,7 +1967,7 @@
 									"if (nextFibonachiIndex < 92) {",
 									"    nextFibonachiIndex++;",
 									"    pm.environment.set(\"nextFibonachiIndex\", nextFibonachiIndex.toString().padStart(2, '0'));",
-									"    postman.setNextRequest(\"Set elementN\");",
+									"    pm.execution.setNextRequest(\"Set elementN\");",
 									"}",
 									""
 								],

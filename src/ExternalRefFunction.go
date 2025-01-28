@@ -2,9 +2,9 @@ package main
 
 import (
 	"devChallengeExcel/contracts"
-	"encoding/json"
 	"fmt"
-	"github.com/antonmedv/expr"
+	json "github.com/bytedance/sonic"
+	"github.com/expr-lang/expr"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,7 +26,7 @@ var fetchExternalRef = func(args ...any) (any, error) {
 	}
 
 	var responsePayload contracts.Cell
-	err = json.NewDecoder(response.Body).Decode(&responsePayload)
+	err = json.ConfigDefault.NewDecoder(response.Body).Decode(&responsePayload)
 	if err != nil {
 		return nil, err
 	}

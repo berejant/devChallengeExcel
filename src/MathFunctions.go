@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/vm/runtime"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/vm/runtime"
 )
 
 var calculateMax = func(args ...any) (any, error) {

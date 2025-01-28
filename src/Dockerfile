@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 RUN apk update && apk add --no-cache git
 
@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 # Build the binary.
-RUN go build -ldflags="-w -s" -tags=nomsgpack -o /app .
+RUN go build -ldflags="-w -s" -tags="nomsgpack sonic avx" -o /app .
 
 RUN cat /etc/passwd | grep nobody > /etc/passwd.nobody
 

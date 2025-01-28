@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"devChallengeExcel/contracts"
-	"encoding/json"
 	"fmt"
+	json "github.com/bytedance/sonic"
 	"net/http"
 	"time"
 )

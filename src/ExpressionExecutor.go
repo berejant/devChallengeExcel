@@ -4,9 +4,9 @@ import (
 	"devChallengeExcel/contracts"
 	"errors"
 	"fmt"
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/ast"
-	"github.com/antonmedv/expr/vm"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/ast"
+	"github.com/expr-lang/expr/vm"
 	"strconv"
 	"strings"
 	"sync"
@@ -134,9 +134,10 @@ func (e *ExpressionExecutor) ExtractExternalRefs(expression string) []string {
 	}
 
 	finder := &FindExternalRefsVisitor{
-		externalRefs: make([]string, 0, len(program.Functions)),
+		externalRefs: make([]string, 0, 20),
 	}
-	ast.Walk(&program.Node, finder)
+	node := program.Node()
+	ast.Walk(&node, finder)
 	return finder.externalRefs
 }
 
