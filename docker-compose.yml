@@ -58,7 +58,7 @@ services:
         retries: 3
 
   unit:
-    image: golang:1.23-alpine
+    image: golang:1.26-alpine
     profiles:
       - testing
     working_dir: /src
